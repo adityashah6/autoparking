@@ -174,19 +174,22 @@ try:
     email_text_area.send_keys('adityashah82@gmail.com')
     time.sleep(.5)  # Small delay to ensure text is entered
 
-    # Switch to the CAPTCHA iframe and click the checkbox
+    # Wait for the CAPTCHA iframe to be present and switch to it
     iframe = wait_for_element(driver, By.CSS_SELECTOR, "iframe[title='reCAPTCHA']")
     driver.switch_to.frame(iframe)
     time.sleep(2)  # Wait for a moment to ensure the iframe is loaded
 
+    # Click the CAPTCHA checkbox
     captcha_checkbox = wait_for_element(driver, By.ID, 'recaptcha-anchor')
     captcha_checkbox.click()
     time.sleep(2)  # Small delay to ensure the CAPTCHA is clicked
 
-    # Wait for the CAPTCHA to be solved
+    # Wait for the CAPTCHA to be solved by checking the aria-checked attribute
     WebDriverWait(driver, 60).until(
-        lambda driver: driver.execute_script("return document.querySelector('iframe[title=\"recaptcha challenge expires in two minutes\"]').contentDocument.querySelector('.recaptcha-checkbox').getAttribute('aria-checked')") == 'true'
+        lambda driver: driver.find_element(By.ID, 'recaptcha-anchor').get_attribute('aria-checked') == 'true'
     )
+
+    # Switch back to the main content
     driver.switch_to.default_content()
     time.sleep(.5)  # Small delay to ensure the switch is complete
 
