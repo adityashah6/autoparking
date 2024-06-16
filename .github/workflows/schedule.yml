@@ -24,4 +24,5 @@ jobs:
 
     - name: Run Selenium script
       run: |
-        python your_script.py
+        python from selenium import webdriver.py
+
