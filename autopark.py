@@ -183,7 +183,8 @@ try:
     captcha_checkbox.click()
     time.sleep(2)  # Small delay to ensure the CAPTCHA is clicked
 
-    # Switch back to the main content
+    # Wait for the CAPTCHA to be fully solved
+    WebDriverWait(driver, 60).until(EC.presence_of_element_located((By.CSS_SELECTOR, "iframe[title='recaptcha challenge expires in two minutes']")))
     driver.switch_to.default_content()
     time.sleep(.5)  # Small delay to ensure the switch is complete
 
@@ -196,13 +197,15 @@ try:
 
     # Ensure the submit button is visible and clickable
     if submit_button.is_displayed() and submit_button.is_enabled():
-        submit_button.click()
-        print("Submit button clicked successfully.")
+        try:
+            submit_button.click()
+            print("Submit button clicked successfully.")
+        except selenium.common.exceptions.ElementClickInterceptedException:
+            print("Submit button is not clickable, trying JavaScript click.")
+            driver.execute_script("arguments[0].click();", submit_button)
+            print("Submit button clicked using JavaScript.")
     else:
         print("Submit button is not clickable.")
-        # Try clicking using JavaScript as a last resort
-        driver.execute_script("arguments[0].click();", submit_button)
-        print("Submit button clicked using JavaScript.")
 
     time.sleep(5)  # Wait to observe the result after submission
 
