@@ -27,9 +27,8 @@ jobs:
         sudo dpkg -i google-chrome-stable_current_amd64.deb || sudo apt-get -f install -y
         rm google-chrome-stable_current_amd64.deb
         python -m pip install --upgrade pip
-        pip install selenium webdriver-manager
+        pip install selenium webdriver-manager pydub SpeechRecognition requests
         sudo apt-get install ffmpeg
 
     - name: Run Selenium script
-      run: |
-        xvfb-run -a python autopark.py
+      run: xvfb-run -a python autopark.py
