@@ -28,7 +28,7 @@ jobs:
         rm google-chrome-stable_current_amd64.deb
         python -m pip install --upgrade pip
         pip install selenium webdriver-manager
-        pip install pydub speech_recognition requests
+        sudo apt-get install ffmpeg
 
     - name: Run Selenium script
       run: |
