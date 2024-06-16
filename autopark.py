@@ -183,8 +183,10 @@ try:
     captcha_checkbox.click()
     time.sleep(2)  # Small delay to ensure the CAPTCHA is clicked
 
-    # Wait for the CAPTCHA to be fully solved
-    WebDriverWait(driver, 60).until(EC.presence_of_element_located((By.CSS_SELECTOR, "iframe[title='recaptcha challenge expires in two minutes']")))
+    # Wait for the CAPTCHA to be solved
+    WebDriverWait(driver, 60).until(
+        lambda driver: driver.execute_script("return document.querySelector('iframe[title=\"recaptcha challenge expires in two minutes\"]').contentDocument.querySelector('.recaptcha-checkbox').getAttribute('aria-checked')") == 'true'
+    )
     driver.switch_to.default_content()
     time.sleep(.5)  # Small delay to ensure the switch is complete
 
