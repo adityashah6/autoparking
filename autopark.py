@@ -167,7 +167,7 @@ try:
     time.sleep(2)  # Wait for the calendar to appear
 
     # Calculate the next day again for the end date
-    if today_date == last_day_of_month:
+    if today_date == last day of month:
         # Click on the next button to go to the next month
         next_button = wait_for_element(driver, By.CLASS_NAME, 'ui-datepicker-next', timeout=30)
         next_button.click()
