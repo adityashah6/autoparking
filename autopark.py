@@ -14,9 +14,15 @@ def wait_for_element(driver, by, value, timeout=10):
 def wait_for_presence(driver, by, value, timeout=10):
     return WebDriverWait(driver, timeout).until(EC.presence_of_element_located((by, value)))
 
-# Initialize the WebDriver with WebDriver Manager
+# Initialize the WebDriver with WebDriver Manager and headless configuration
 service = Service(ChromeDriverManager().install())
-driver = webdriver.Chrome(service=service)
+options = webdriver.ChromeOptions()
+options.add_argument('--headless')
+options.add_argument('--no-sandbox')
+options.add_argument('--disable-dev-shm-usage')
+options.add_argument('--disable-gpu')
+options.add_argument('--remote-debugging-port=9222')  # Avoid DevToolsActivePort file issue
+driver = webdriver.Chrome(service=service, options=options)
 
 try:
     # Open the web page
@@ -96,12 +102,12 @@ try:
     suite_text_area.send_keys('2A')
     time.sleep(.5)  # Small delay to ensure text is entered
 
-
     # Enter the zip code
     zip_text_area = wait_for_element(driver, By.ID, 'MainContent_ctrlOverNightParking_txtAddressZip')
     zip_text_area.clear()
     zip_text_area.send_keys('07974')
     time.sleep(.5)  # Small delay to ensure text is entered
+
     # Open the calendar widget and select the next day for the start date
     date_picker = wait_for_element(driver, By.ID, 'MainContent_ctrlOverNightParking_txtStartDate')
     date_picker.click()
@@ -148,7 +154,6 @@ try:
         next_day_end_element = wait_for_presence(driver, By.XPATH, f"//a[text()='{next_date}']")
     next_day_end_element.click()
 
-
     # Wait for the first name text area, clear it, and enter the first name
     first_name_text_area = wait_for_element(driver, By.ID, 'MainContent_ctrlOverNightParking_txtFirstName')
     first_name_text_area.send_keys('Aditya')
@@ -163,7 +168,6 @@ try:
     phone_text_area = wait_for_element(driver, By.ID, 'MainContent_ctrlOverNightParking_txtPhone')
     phone_text_area.send_keys('714-408-5316')
     time.sleep(.5)  # Small delay to ensure text is entered
-    
 
     # Wait for the email text area, clear it, and enter the email address
     email_text_area = wait_for_element(driver, By.ID, 'MainContent_ctrlOverNightParking_txtEmail')
@@ -205,4 +209,3 @@ try:
 finally:
     # Close the browser
     driver.quit()
-
