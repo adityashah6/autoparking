@@ -31,4 +31,4 @@ jobs:
 
     - name: Run Selenium script
       run: |
-        python autopark.py
+        xvfb-run -a python autpark.py
