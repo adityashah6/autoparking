@@ -260,7 +260,7 @@ try:
     time.sleep(.5)  # Small delay to ensure the element is in view
 
     # Ensure the submit button is visible and clickable
-    if submit_button.is_displayed() and submit_button is_enabled():
+    if submit_button.is_displayed() and submit_button.is_enabled():
         try:
             submit_button.click()
             logger.info("Submit button clicked successfully.")
