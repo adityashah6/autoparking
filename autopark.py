@@ -5,8 +5,12 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import Select
 from webdriver_manager.chrome import ChromeDriverManager
+from pydub import AudioSegment
+import speech_recognition as sr
+import requests
 import time
 import calendar
+import os
 import logging
 
 def wait_for_element(driver, by, value, timeout=10):
@@ -14,6 +18,22 @@ def wait_for_element(driver, by, value, timeout=10):
 
 def wait_for_presence(driver, by, value, timeout=10):
     return WebDriverWait(driver, timeout).until(EC.presence_of_element_located((by, value)))
+
+def download_audio(driver, src_url, file_path):
+    audio_response = requests.get(src_url, stream=True)
+    with open(file_path, 'wb') as audio_file:
+        for chunk in audio_response.iter_content(chunk_size=128):
+            audio_file.write(chunk)
+
+def convert_audio_to_text(file_path):
+    recognizer = sr.Recognizer()
+    audio = AudioSegment.from_mp3(file_path)
+    audio.export("captcha.wav", format="wav")
+    with sr.AudioFile("captcha.wav") as source:
+        audio_data = recognizer.record(source)
+        text = recognizer.recognize_google(audio_data)
+    os.remove("captcha.wav")
+    return text
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -192,13 +212,42 @@ try:
     captcha_checkbox.click()
     time.sleep(2)  # Small delay to ensure the CAPTCHA is clicked
 
-    logger.info("Waiting for CAPTCHA to be solved")
-    # Wait for the CAPTCHA to be solved by checking the aria-checked attribute
-    WebDriverWait(driver, 60).until(
-        lambda driver: driver.find_element(By.ID, 'recaptcha-anchor').get_attribute('aria-checked') == 'true'
-    )
+    try:
+        logger.info("Waiting for CAPTCHA to be solved")
+        # Wait for the CAPTCHA to be solved by checking the aria-checked attribute
+        WebDriverWait(driver, 60).until(
+            lambda driver: driver.find_element(By.ID, 'recaptcha-anchor').get_attribute('aria-checked') == 'true'
+        )
+        logger.info("CAPTCHA solved")
+    except:
+        logger.info("Solving audio CAPTCHA")
+        # Click the audio challenge button
+        audio_button = wait_for_element(driver, By.ID, 'recaptcha-audio-button', timeout=10)
+        audio_button.click()
+        time.sleep(2)  # Wait for the audio challenge to load
 
-    logger.info("CAPTCHA solved")
+        # Download the audio file
+        audio_src = wait_for_element(driver, By.CSS_SELECTOR, "audio#audio-source", timeout=10).get_attribute("src")
+        download_audio(driver, audio_src, "captcha.mp3")
+
+        # Convert audio to text
+        audio_text = convert_audio_to_text("captcha.mp3")
+        os.remove("captcha.mp3")
+        logger.info(f"Audio CAPTCHA text: {audio_text}")
+
+        # Enter the audio CAPTCHA text and submit
+        audio_captcha_input = wait_for_element(driver, By.ID, 'audio-response', timeout=10)
+        audio_captcha_input.send_keys(audio_text)
+        verify_button = wait_for_element(driver, By.ID, 'recaptcha-verify-button', timeout=10)
+        verify_button.click()
+        time.sleep(2)  # Wait for the CAPTCHA verification to complete
+
+        # Check if the CAPTCHA is solved
+        WebDriverWait(driver, 60).until(
+            lambda driver: driver.find_element(By.ID, 'recaptcha-anchor').get_attribute('aria-checked') == 'true'
+        )
+        logger.info("Audio CAPTCHA solved")
+
     # Switch back to the main content
     driver.switch_to.default_content()
     time.sleep(.5)  # Small delay to ensure the switch is complete
